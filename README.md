@@ -6,7 +6,6 @@ Work in progress :warning:
 
 Made by:
 - [Paolo Zanotti](https://github.com/zanottipaolo)
-- [Federico De Duro](https://github.com/Jfkmdd)
 - [Matteo Soldini](https://github.com/matteosoldini)
-- [Samuel Gherardi](https://github.com/SamuelGherardi)
-- [Andrea Caccia](https://github.com/CacciaAndrea)
+- [Silvia Bernardi](https://github.com/SilviaBer)
+- [Francesco Foresti](https://github.com/)
