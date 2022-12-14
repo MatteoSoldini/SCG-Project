@@ -8,35 +8,48 @@ final_items = FinalItem()
 budget_volume = int(budget_items[['Quantità']].sum())
 final_volume = int(final_items[['Quantità']].sum())
 
-budget_price = 0
-budget_cost = 0
-for index, row in budget_items.iterrows():
-    budget_price += row['Prezzo unitario (€/u)'] * row['Quantità']
-    budget_cost += row['Costo unitario (€/u)'] * row['Quantità']
+# Budget
+budget_items['Prezzo totale (€)'] = budget_items['Prezzo unitario (€/u)'] * \
+    budget_items['Quantità']
+budget_items['Costo totale (€)'] = budget_items['Costo unitario (€/u)'] * \
+    budget_items['Quantità']
 
+budget_price = budget_items['Prezzo totale (€)'].sum()
+budget_cost = budget_items['Costo totale (€)'].sum()
+
+# Standard Mix
 standard_mix_items = budget_items[['Nr articolo', 'Prezzo unitario (€/u)', 'Costo unitario (€/u)', 'Mix (%)']].merge(
     final_items[['Nr articolo', 'Quantità']], how="left", on=['Nr articolo'])
-standard_mix_price = 0
-standard_mix_cost = 0
-for index, row in standard_mix_items.iterrows():
-    standard_mix_price += row['Prezzo unitario (€/u)'] * \
-        row['Mix (%)'] * final_volume
-    standard_mix_cost += row['Costo unitario (€/u)'] * \
-        row['Mix (%)'] * final_volume
 
+standard_mix_items['Prezzo totale (€)'] = standard_mix_items['Prezzo unitario (€/u)'] * \
+    standard_mix_items['Mix (%)'] * final_volume
+standard_mix_items['Costo totale (€)'] = standard_mix_items['Costo unitario (€/u)'] * \
+    standard_mix_items['Mix (%)'] * final_volume
+
+standard_mix_price = standard_mix_items['Prezzo totale (€)'].sum()
+standard_mix_cost = standard_mix_items['Costo totale (€)'].sum()
+
+# Actual Mix
 actual_mix_items = budget_items[['Nr articolo', 'Prezzo unitario (€/u)', 'Costo unitario (€/u)']].merge(
     final_items[['Nr articolo', 'Quantità', 'Mix (%)']], how="left", on=['Nr articolo'])
-actual_mix_price = 0
-actual_mix_cost = 0
-for index, row in actual_mix_items.iterrows():
-    actual_mix_price += row['Prezzo unitario (€/u)'] * row['Quantità']
-    actual_mix_cost += row['Costo unitario (€/u)'] * row['Quantità']
 
-final_price = 0
-final_cost = 0
-for index, row in final_items.iterrows():
-    final_price += row['Prezzo unitario (€/u)'] * row['Quantità']
-    final_cost += row['Costo unitario (€/u)'] * row['Quantità']
+actual_mix_items['Prezzo totale (€)'] = actual_mix_items['Prezzo unitario (€/u)'] * \
+    actual_mix_items['Quantità']
+
+actual_mix_items['Costo totale (€)'] = actual_mix_items['Costo unitario (€/u)'] * \
+    actual_mix_items['Quantità']
+
+actual_mix_price = actual_mix_items['Prezzo totale (€)'].sum()
+actual_mix_cost = actual_mix_items['Costo totale (€)'].sum()
+
+# Final
+final_items['Prezzo totale (€)'] = final_items['Prezzo unitario (€/u)'] * \
+    final_items['Quantità']
+final_items['Costo totale (€)'] = final_items['Costo unitario (€/u)'] * \
+    final_items['Quantità']
+
+final_price = final_items['Prezzo totale (€)'].sum()
+final_cost = final_items['Costo totale (€)'].sum()
 
 print(pd.DataFrame({
     'Budget': [
@@ -75,4 +88,4 @@ print(pd.DataFrame({
         final_cost,
         final_price - final_cost
     ],
-}, index=['Prezzi', 'Costi', 'MON']).to_excel('export.xlsx'))
+}, index=['Prezzi', 'Costi', 'MOL']).to_excel('export.xlsx'))
