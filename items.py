@@ -39,8 +39,7 @@ def getItem(final: bool) -> pd.DataFrame:
     # Resources cost
     resource_usage = resource_usage.loc[resource_usage['budget/consuntivo'].str.lower(
     ) == filter]
-    production_volume = resource_usage['Quantità di output'].sum(
-    )
+    production_volume = resource_usage['Quantità di output'].sum()
 
     resource_usage_with_cost = resource_usage.merge(resources_cost, how="left", left_on=[
         'Risorsa', 'Nr. Area di produzione'], right_on=['Risorsa', 'Area di produzione'])
