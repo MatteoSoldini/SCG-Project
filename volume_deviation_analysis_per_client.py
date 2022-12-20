@@ -49,25 +49,6 @@ euro_final_sales_groupped_by_client = final_sales_with_exchange_rates[
     'Prezzo (€)': 'Prezzo consuntivo (€)',
 })
 
-# clients_sales = .merge(
-#     budget_sales.groupby(by=["Nr. origine"], as_index=False).sum(numeric_only=True).rename(
-#         columns={
-#             'Importo vendita in valuta locale (TOTALE VENDITA)': 'Prezzo budget valuta estera'}
-#     )[['Nr. origine', 'Prezzo budget valuta estera']],
-#     how="left",
-#     on='Nr. origine',
-# ).merge(
-#     final_sales.groupby(by=["Nr. origine"], as_index=False).sum(numeric_only=True).rename(
-#         columns={
-#             'Importo vendita in valuta locale (TOTALE VENDITA)': 'Prezzo consuntivo valuta estera'}
-#     )[['Nr. origine', 'Prezzo consuntivo valuta estera']],
-#     how="left",
-#     on='Nr. origine',
-# )
-
-# clients_sales['Δ Tasso cambio budget'] = clients_sales[
-#     'Prezzo budget (€)'] - clients_sales['Prezzo budget valuta estera']
-
 print(euro_budget_sales_groupped_by_client.merge(
     euro_final_sales_groupped_by_client,
     how="outer",

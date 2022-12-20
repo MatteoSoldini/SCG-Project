@@ -50,6 +50,7 @@ final_sales_with_exchange_rates['Prezzo unitario fattura (VL/u)'] = final_sales_
 
 # Actual mix
 actual_mix = budget_sales_with_exchange_rates[[
+    'Valuta',
     'Nr. origine',
     'Nr articolo',
     'Prezzo unitario fattura (VL/u)',
@@ -64,7 +65,8 @@ actual_mix['Prezzo totale fattura (€)'] = actual_mix['Prezzo unitario fattura 
     actual_mix['Tasso di cambio medio'] * actual_mix['Quantità']
 
 # Actual exchange mix
-actual_tax_mix = budget_sales_with_exchange_rates[[
+actual_exchange_mix = budget_sales_with_exchange_rates[[
+    'Valuta',
     'Nr. origine',
     'Nr articolo',
     'Prezzo unitario fattura (VL/u)']].merge(
@@ -75,12 +77,14 @@ actual_tax_mix = budget_sales_with_exchange_rates[[
              'Quantità']],
     how='inner',
     on=['Nr. origine', 'Nr articolo'])
-actual_tax_mix['Prezzo totale fattura (€)'] = actual_tax_mix['Prezzo unitario fattura (VL/u)'] / \
-    actual_tax_mix['Tasso di cambio medio'] * actual_tax_mix['Quantità']
+actual_exchange_mix['Prezzo totale fattura (€)'] = actual_exchange_mix['Prezzo unitario fattura (VL/u)'] / \
+    actual_exchange_mix['Tasso di cambio medio'] * \
+    actual_exchange_mix['Quantità']
 
 # Final mix
 final_mix = final_sales_with_exchange_rates[
-    ['Nr. origine',
+    ['Valuta',
+     'Nr. origine',
      'Nr articolo',
      'Prezzo unitario fattura (VL/u)',
      'Tasso di cambio medio',
@@ -93,17 +97,22 @@ print(pd.DataFrame({
         actual_mix['Prezzo totale fattura (€)'].sum(),
     ],
     'Δ E-TE': [
-        actual_tax_mix['Prezzo totale fattura (€)'].sum(
+        actual_exchange_mix['Prezzo totale fattura (€)'].sum(
         ) - actual_mix['Prezzo totale fattura (€)'].sum(),
     ],
     'Mix tasso effettivo': [
-        actual_tax_mix['Prezzo totale fattura (€)'].sum()
+        actual_exchange_mix['Prezzo totale fattura (€)'].sum()
     ],
     'Δ TE-C': [
         final_mix['Prezzo totale fattura (€)'].sum(
-        ) - actual_tax_mix['Prezzo totale fattura (€)'].sum(),
+        ) - actual_exchange_mix['Prezzo totale fattura (€)'].sum(),
     ],
     'Consuntivo': [
         final_mix['Prezzo totale fattura (€)'].sum(),
     ],
-}, index=['Prezzi']).to_excel('exchange_vs_price_analysis.xlsx'))
+}, index=['Prezzi']))
+
+# Export
+# actual_mix.to_excel('actual_mix.xlsx')
+# actual_exchange_mix.to_excel('actual_exchange_mix.xlsx')
+# final_mix.to_excel('final_mix.xlsx')
