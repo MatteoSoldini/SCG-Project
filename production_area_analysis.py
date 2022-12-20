@@ -74,3 +74,54 @@ print(pd.DataFrame({
     'Costo consuntivo':
         final_production_areas['Costo (€)'].values,
 }, index=[budget_production_areas['Area di produzione']]))
+
+budget_resource_cost = budget_resource_usage.groupby(
+    by=['Risorsa'], as_index=False).sum(numeric_only=True).sort_values(by=['Costo (€)'], ascending=False)
+
+print(budget_resource_cost)
+budget_resource_cost.to_excel('export/budget_resource_cost.xlsx')
+
+final_resource_cost = final_resource_usage.groupby(
+    by=['Risorsa'], as_index=False).sum(numeric_only=True).sort_values(by=['Costo (€)'], ascending=False)
+
+print(final_resource_cost)
+final_resource_cost.to_excel('export/final_resource_cost.xlsx')
+
+resource_usage_merge = (budget_resource_cost[
+    [
+        'Risorsa',
+        'Tempo risorsa',
+        'Costo orario (€/h)',
+        'Costo (€)',
+    ]
+].merge(final_resource_cost[
+    [
+        'Risorsa',
+        'Tempo risorsa',
+        'Costo orario (€/h)',
+        'Costo (€)',
+    ]
+], how="outer", on=['Risorsa']))
+
+
+budget_cost_total = resource_usage_merge['Costo (€)_x']
+print(budget_cost_total)
+
+actual_hours_total = resource_usage_merge['Costo orario (€/h)_x'] * resource_usage_merge['Tempo risorsa_y']
+print(actual_hours_total)
+
+final_cost_total = resource_usage_merge['Costo (€)_y']
+print(final_cost_total)
+
+total = pd.DataFrame({
+    'Risorsa': resource_usage_merge['Risorsa'],
+    'Costo tot budget': budget_cost_total,
+    'Δ Tempo risorsa': actual_hours_total - budget_cost_total,
+    'Costo ore effettive': actual_hours_total,
+    'Δ Costo orario (€/h)': final_cost_total - actual_hours_total,
+    'Costo tot consuntivo': final_cost_total,
+})
+
+print(total)
+
+#total.to_excel('export/variance_resource_usage.xlsx')
