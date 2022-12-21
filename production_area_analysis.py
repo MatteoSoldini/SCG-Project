@@ -61,11 +61,6 @@ production_areas['Δ'] = production_areas['Costo orario (€/h) consuntivo'] - \
 # Export
 production_areas.to_excel('export/production_areas.xlsx')
 
-# Analysis of variances
-
-print(budget_resource_usage)
-print(final_resource_usage)
-
 # actual_hours_production
 
 print(pd.DataFrame({
@@ -75,53 +70,49 @@ print(pd.DataFrame({
         final_production_areas['Costo (€)'].values,
 }, index=[budget_production_areas['Area di produzione']]))
 
-budget_resource_cost = budget_resource_usage.groupby(
-    by=['Risorsa'], as_index=False).sum(numeric_only=True).sort_values(by=['Costo (€)'], ascending=False)
+# Analisi scostamento delle risorse
 
-print(budget_resource_cost)
-budget_resource_cost.to_excel('export/budget_resource_cost.xlsx')
+# risorse usate a budget, raggruppate per area di produzione e risorse
+uso_risorse_budget = budget_resource_usage.groupby(
+    by=['Risorsa', 'Area di produzione'], as_index=False).sum(numeric_only=True).sort_values(by=['Area di produzione'], ascending=False)
 
-final_resource_cost = final_resource_usage.groupby(
-    by=['Risorsa'], as_index=False).sum(numeric_only=True).sort_values(by=['Costo (€)'], ascending=False)
+# risorse usate a consuntivo, raggruppate per area di produzione e risorse
+uso_risorse_consuntivo = final_resource_usage.groupby(
+    by=['Risorsa', 'Area di produzione'], as_index=False).sum(numeric_only=True).sort_values(by=['Area di produzione'], ascending=False)
 
-print(final_resource_cost)
-final_resource_cost.to_excel('export/final_resource_cost.xlsx')
+risorse_budget_consuntivo = uso_risorse_budget.merge(
+    uso_risorse_consuntivo, how='outer', on=['Area di produzione', 'Risorsa'], suffixes=[' budget', ' consuntivo']).sort_values(by=['Area di produzione'], ascending=False)
 
-resource_usage_merge = (budget_resource_cost[
-    [
-        'Risorsa',
-        'Tempo risorsa',
-        'Costo orario (€/h)',
-        'Costo (€)',
-    ]
-].merge(final_resource_cost[
-    [
-        'Risorsa',
-        'Tempo risorsa',
-        'Costo orario (€/h)',
-        'Costo (€)',
-    ]
-], how="outer", on=['Risorsa']))
+# questo perché facendo il group-by, venivano sommati i costi orari per risorse per aree di produzione
+# anziché tenerli fissi come da tabella iniziale. Abbiamo quindi fatto un ulteriore merge per unire i costi a budget
+# delle risorse divise per area di produzione e le risorse usate a budget e a consuntivo
+risorse_budget_consuntivo_ore = risorse_budget_consuntivo.merge(
+    budget_costs, how='inner', on=['Area di produzione', 'Risorsa'], suffixes=[' budget', ' consuntivo'])
 
+# Tengo sia il costo orario che il tempo di utilizzo a budget
+costo_tot_budget = risorse_budget_consuntivo_ore['Costo (€) budget'].values
 
-budget_cost_total = resource_usage_merge['Costo (€)_x']
-print(budget_cost_total)
+# Tengo il costo orario a budget e il tempo a consuntivo
+costo_ore_effettive = risorse_budget_consuntivo_ore['Tempo risorsa consuntivo'].values * risorse_budget_consuntivo_ore['Costo orario (€/h)'].values
 
-actual_hours_total = resource_usage_merge['Costo orario (€/h)_x'] * resource_usage_merge['Tempo risorsa_y']
-print(actual_hours_total)
+# Tengo il costo orario e il tempo di utilizzo a consuntivo
+costo_tot_consuntivo = risorse_budget_consuntivo_ore['Costo (€) consuntivo'].values
 
-final_cost_total = resource_usage_merge['Costo (€)_y']
-print(final_cost_total)
-
-total = pd.DataFrame({
-    'Risorsa': resource_usage_merge['Risorsa'],
-    'Costo tot budget': budget_cost_total,
-    'Δ Tempo risorsa': actual_hours_total - budget_cost_total,
-    'Costo ore effettive': actual_hours_total,
-    'Δ Costo orario (€/h)': final_cost_total - actual_hours_total,
-    'Costo tot consuntivo': final_cost_total,
+scostamento_risorse = pd.DataFrame({
+    'Area di produzione':
+        risorse_budget_consuntivo_ore['Area di produzione'].values,
+    'Risorsa':
+        risorse_budget_consuntivo_ore['Risorsa'].values,
+    'Costo budget':
+        costo_tot_budget,
+    'Δ tempo':
+        costo_ore_effettive - costo_tot_budget,
+    'Costo ore effettive':
+        costo_ore_effettive,
+    'Δ costo orario':
+        costo_tot_consuntivo - costo_ore_effettive,
+    'Costo consuntivo':
+        costo_tot_consuntivo,
 })
 
-print(total)
-
-#total.to_excel('export/variance_resource_usage.xlsx')
+scostamento_risorse.to_excel('export/scostamento_risorse.xlsx')
