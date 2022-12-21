@@ -81,7 +81,7 @@ uso_risorse_consuntivo = final_resource_usage.groupby(
     by=['Risorsa', 'Area di produzione'], as_index=False).sum(numeric_only=True).sort_values(by=['Area di produzione'], ascending=False)
 
 risorse_budget_consuntivo = uso_risorse_budget.merge(
-    uso_risorse_consuntivo, how='outer', on=['Area di produzione', 'Risorsa'], suffixes=[' budget', ' consuntivo']).sort_values(by=['Area di produzione'], ascending=False)
+    uso_risorse_consuntivo, how='outer', on=['Area di produzione', 'Risorsa'], suffixes=[' budget', ' consuntivo']).sort_values(by=['Area di produzione'], ascending=False).fillna(0)
 
 # questo perché facendo il group-by, venivano sommati i costi orari per risorse per aree di produzione
 # anziché tenerli fissi come da tabella iniziale. Abbiamo quindi fatto un ulteriore merge per unire i costi a budget
